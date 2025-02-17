@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    sentinel:
+#      transport:
+#        dashboard: http://10.59.12.42:8899
+#      datasource:
+#        ds1:
+#          nacos:
+#            server-addr: 10.59.12.42:8848
+#            dataId: flow_rules
+#            groupId: DEFAULT_GROUP
+#            data-type: json
+#            rule-type: flow
+    nacos:
+      discovery:
+        server-addr: https://nacos.wangyan.zone/ #nacos服务器
+        username: nacos
+        password: nacos
+    gateway: #让gateway通过nacos实现自动路由转发
+      discovery:
+        locator:
+          enabled: false
+      routes:  #路由规则配置
+        - id: ybpt_route
+          uri: lb://ybpt-web
+          predicates:
+            - Path=/ybpt/**
+          filters:
+            - StripPrefix=1
+        - id: civil_route
+          uri: lb://civilApi
+          predicates:
+            - Path=/civil/**
+          filters:
+            - StripPrefix=1
+      globalcors: #网关CORS跨域设置
+        cors-configurations:
+          '[/**]': #所有URI都应用下面的跨域设计
+            allowed-credentials: true
+            allowed-origins:
+              - "*"
+            allowed-headers: "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            max-age: 3600
+server:
+  port: 8080
+  ssl:
+    key-store: classpath:g.wangyan.zone.pfx
+    key-store-password: g
+    key-store-type: PKCS12
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
